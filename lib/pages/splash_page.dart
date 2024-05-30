@@ -24,14 +24,19 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            FlutterLogo(size: 100),
-            SizedBox(height: 20),
-            Text('Smoke Spot',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text('Smoking Spot',
+                style: TextStyle(
+                  fontSize: 30,
+                  color: Colors.white, 
+                  fontWeight: FontWeight.bold, 
+                  fontStyle: FontStyle.italic,
+                  )
+                ),
           ],
         ),
       ),

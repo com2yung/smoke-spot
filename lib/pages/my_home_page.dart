@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mypage/user_info_edit_page.dart';
-import 'package:mypage/Home_page.dart';
+import 'package:smoke_spot/pages/home_page.dart';
+import 'package:smoke_spot/pages/user_info_edit_page.dart';
 import 'login_page.dart';
 
 // 마이페이지
@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => HomePage()),
-              );
+              ); // pop으로 바꾸면 까만 화면만 나와서 일단 push로 함
           },
         ),
       ),

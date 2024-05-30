@@ -14,7 +14,7 @@ class LoginPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'SmokingSpot',
+                'Smoking Spot',
                 style: TextStyle(
                   fontSize:30,
                   fontWeight: FontWeight.bold,
