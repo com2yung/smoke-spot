@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:smoke_spot/pages/home_page.dart';
-import 'package:smoke_spot/pages/user_info_edit_page.dart';
+import 'user_info_edit_page.dart';
 import 'login_page.dart';
+import 'pages.dart';
 
 // 마이페이지
 class MyHomePage extends StatefulWidget {
@@ -31,10 +31,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         backgroundColor: Colors.white,
         leading: BackButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-              ); // pop으로 바꾸면 까만 화면만 나와서 일단 push로 함
+            Navigator.pop(context);// pop으로 바꾸면 까만 화면만 나와서 일단 push로 함
           },
         ),
       ),
@@ -102,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context, 
                       MaterialPageRoute(builder: (context) => LoginPage()),
                       );
@@ -144,10 +141,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   type: BottomNavigationBarType.fixed,
   onTap: (int index) {
     if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+      Navigator.pop(context);
     }
   },
 ),

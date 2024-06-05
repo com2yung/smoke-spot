@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'sign_up_page.dart';
-import 'Home_page.dart';
 
 // 로그인 페이지 
 class LoginPage extends StatelessWidget {
@@ -39,10 +38,7 @@ class LoginPage extends StatelessWidget {
               SizedBox(height: 15),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
+                  Navigator.pop(context);
                 },
                 child: Text('Log In', style: TextStyle(fontWeight: FontWeight.bold),),
               ),

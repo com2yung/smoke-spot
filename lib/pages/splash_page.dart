@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smoke_spot/pages/pages.dart';
+import 'pages.dart';
 
 class SplashPage extends StatefulWidget {
   @override
