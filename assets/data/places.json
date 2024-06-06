@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Place 1",
+    "location": {
+      "latitude": 37.1234,
+      "longitude": 127.5678
+    },
+    "address": "37.1234° N, 127.5678° E",
+    "image": "assets/images/place_1.jpg"
+  },
+  {
+    "name": "Place 2",
+    "location": {
+      "latitude": 37.2345,
+      "longitude": 127.6789
+    },
+    "address": "37.2345° N, 127.6789° E",
+    "image": "assets/images/place_2.jpg"
+  }
+]

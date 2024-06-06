@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'bookmark_page.dart';
+import 'search_page.dart';
 import 'pages.dart';
 import 'place.dart';
+import 'bookmark.dart';
+import 'package:flutter/services.dart';
+
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final Bookmark? bookmark;
+  const HomePage({Key? key, this.bookmark}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -18,19 +23,24 @@ class _HomePageState extends State<HomePage> {
   Location _locationController = new Location(); //유저의 로케이션 정보
   LatLng? _currentP = null; //유저의 현재 위치
   PermissionStatus _permissionGranted = PermissionStatus.denied;
-
-  List<Place> _nearbyPlaces = []; // 드래그 시트 - 주변 장소 리스트
+  Set<Place> _nearbyPlaces = {}; // 드래그 시트 - 주변 장소 데이터
   late ScrollController _scrollController; // 드래그 시트 컨트롤러
   double _sheetSize = 0.1; // 드래그 시트의 크기
-  bool _isSearchBarFocused = false; // 검색창 포커스 여부 - 검색창 누르면 드래그 시트 뜨지 않게 하기 위함
-
+  late Bookmark bookmarkManager;
+  
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     getLocationUpdates();
+    loadNearbyPlaces();
+    bookmarkManager = Bookmark();
   }
-
+  // json 파일을 읽어오는 함수
+  void loadNearbyPlaces() async {
+    String jsonString = await rootBundle.loadString('assets/data/places.json'); // 파일 읽기
+    _nearbyPlaces = parsePlacesFromJson(jsonString);
+  }
   GoogleMapController? mapController;
 
   void _onMapCreated(GoogleMapController controller) {
@@ -85,24 +95,17 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-        // 검색창
+        // 검색창 -> search_page로 이동
         title: Row(
           children: [
             Expanded(
               child: TextField(
-                // 드래그 시트 숨기기
+                readOnly: true,
                 onTap: () {
-                  setState(() {
-                    _isSearchBarFocused = true;
-                    _sheetSize = 0;
-                  });
-                },
-                // 드래그 시트 다시 등장시키기
-                onEditingComplete: () {
-                  setState(() {
-                    _isSearchBarFocused = false;
-                    _sheetSize = 0.1;
-                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SearchPage()),
+                  );
                 },
                 decoration: InputDecoration(
                   hintText: '원하는 장소를 입력하세요.',
@@ -115,7 +118,10 @@ class _HomePageState extends State<HomePage> {
             IconButton(
               icon: Icon(Icons.search),
               onPressed: () {
-                // 검색 아이콘 동작 설정
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SearchPage()),
+                );
               },
             ),
           ],
@@ -182,10 +188,7 @@ class _HomePageState extends State<HomePage> {
               child: const Icon(Icons.my_location),
             ),
           ),
-
-
           // DraggableScrollableSheet 세션 - 아래에서 위로 드래그 하면 나오는 거
-          if (!_isSearchBarFocused) // 검색창에 포커스 안 되어있을 때 나오게 구현함
             DraggableScrollableSheet(
               initialChildSize: _sheetSize,
               minChildSize: _sheetSize,
@@ -214,10 +217,48 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: ListView.builder(
                         controller: _scrollController,
-                        itemCount: _nearbyPlaces.length,
+                        itemCount: _nearbyPlaces.length + 2,
                         itemBuilder: (BuildContext context, int index) {
+                          if (index == 0) {
+                            return SizedBox(height: 100);
+                          } else if (index == 1) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Text(
+                                '추천 흡연구역',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            );
+                          }
+                          final place = _nearbyPlaces.elementAt(index - 2);
                           return ListTile(
-                            title: Text(_nearbyPlaces[index].name),
+                            title: Text(place.name),
+                            subtitle: Text(place.address),
+                            leading: place.image != null
+                              ? Image.asset(
+                                place.image!,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(Icons.image); // 이미지 파일 로드 실패시 이미지 아이콘
+                                },
+                              )
+                              :null,
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.star,
+                                color: bookmarkManager.isBookmarked(place) ? Colors.yellow : Colors.grey,
+                               ), // 북마크 여부에 따라 색상 변경 
+                              onPressed: () {
+                                setState( () {
+                                  bookmarkManager.toggleBookmark(place);
+                                }); // 저장 아이콘 동작
+                              },
+                            ),
                             onTap: () {
                               // 장소를 탭했을 때
                             },
@@ -282,16 +323,33 @@ class _HomePageState extends State<HomePage> {
             currentIndex: 2,
             type: BottomNavigationBarType.fixed,
             onTap: (int index) {
-              if (index == 4) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
-              }
-            },
-          ),
-        ],
-      ),
+              switch (index) {
+                case 0:
+                  // 부스 등록 페이지 이동
+                  break;
+                case 1:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BookmarkPage(bookmark: widget.bookmark))
+                  );
+                  break;
+                case 2:
+                  // 현재 페이지
+                  break;
+                case 3:
+                  // 커뮤니티 페이지로 이동
+                  break;
+                case 4:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyHomePage()),
+                  );
+                  break;
+               }
+              },
+             ),
+            ],
+         ),
       // Drawer 세션
       drawer: Drawer(
         child: Container(

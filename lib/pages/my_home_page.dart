@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'user_info_edit_page.dart';
 import 'login_page.dart';
 import 'pages.dart';
+import 'bookmark_page.dart';
+import 'bookmark.dart';
 
 // 마이페이지
 class MyHomePage extends StatefulWidget {
+  final Bookmark? bookmark;
+  const MyHomePage({Key? key, this.bookmark}) : super(key: key);
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -80,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 indicatorColor: Colors.black,
                 tabs: [
                   Tab(text: '리뷰 관리'),
-                  Tab(text: '내 장소 관리'),
+                  Tab(text: '내 흡연구역 관리'),
                 ],
               ),
               // 탭 바 뷰 섹션
@@ -90,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   controller: _tabController,
                   children: [
                     Center(child: Text('리뷰 관리 내용')),
-                    Center(child: Text('내 장소 관리 내용')),
+                    Center(child: Text('내 흡연구역 관리 내용')),
                   ],
                 ),
               ),
@@ -140,8 +145,31 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   currentIndex: 4,
   type: BottomNavigationBarType.fixed,
   onTap: (int index) {
-    if (index == 2) {
-      Navigator.pop(context);
+    switch (index) {
+      case 0:
+        // 부스 등록 페이지로 이동
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BookmarkPage(bookmark: widget.bookmark)),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+        break;
+      case 3:
+        // 커뮤니티 페이지로 이동
+        break;
+      case 4:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyHomePage(bookmark: widget.bookmark)),
+        );
+        break;
     }
   },
 ),
