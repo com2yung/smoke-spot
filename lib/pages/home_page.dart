@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'bookmark_page.dart';
-import 'search_page.dart';
 import 'pages.dart';
 import 'place.dart';
-import 'bookmark.dart';
 import 'package:flutter/services.dart';
 
 
@@ -324,8 +322,18 @@ class _HomePageState extends State<HomePage> {
             type: BottomNavigationBarType.fixed,
             onTap: (int index) {
               switch (index) {
-                case 0:
-                  // 부스 등록 페이지 이동
+                case 0:// 부스 등록 페이지 이동
+                  if (mapController != null && _currentP != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>RegiSmokeSpot(lat: _currentP!.latitude, lng: _currentP!.longitude)),
+                    );
+                  } else {
+                    // Handle the case where mapController or _currentP is null
+                    if(_permissionGranted == PermissionStatus.denied){
+                      getLocationUpdates();
+                    }
+                  }
                   break;
                 case 1:
                   Navigator.push(

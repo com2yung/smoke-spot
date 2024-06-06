@@ -1,6 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
+  @override
+  _SearchPageState createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final TextEditingController _controller = TextEditingController();
+  List<String> _suggestions = [];
+
+  void _onSearchChanged(String query) async {
+    if (query.isNotEmpty) {
+      const apiKey = 'AIzaSyB185R2-8CsRjYS4vet-4k64H81TFnn9a0'; // 여기에 Google Places API 키를 입력하세요
+      final url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$apiKey&language=ko';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          setState(() {
+            _suggestions = (data['predictions'] as List).map((prediction) => prediction['description'].toString()).toList();
+          });
+        } else {
+          print('Error: ${data['status']}');
+        }
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } else {
+      setState(() {
+        _suggestions = [];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      _onSearchChanged(_controller.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(() {});
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,6 +63,7 @@ class SearchPage extends StatelessWidget {
           },
         ),
         title: TextField(
+          controller: _controller,
           decoration: InputDecoration(
             hintText: '원하는 장소를 입력하세요.',
             border: InputBorder.none,
@@ -29,8 +80,17 @@ class SearchPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Text('검색 페이지'),
+      body: ListView.builder(
+        itemCount: _suggestions.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_suggestions[index]),
+            onTap: () {
+              // 아이템 선택 시 동작 구현
+              print('Selected: ${_suggestions[index]}');
+            },
+          );
+        },
       ),
     );
   }

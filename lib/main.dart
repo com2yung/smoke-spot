@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'pages/pages.dart';
 
-void main() {
-  runApp(MyApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
+  runApp(const MyApp());
+}
 class MyApp extends StatelessWidget {
-  const MyApp();
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
