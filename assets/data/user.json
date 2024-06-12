@@ -1,0 +1,11 @@
+[
+    {
+        "name": "",
+        "email": "",
+        "password": "",
+        "confirmPassword": "",
+        "birthdate": "",
+        "isAgreed": false
+      }
+      
+]

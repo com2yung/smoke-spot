@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smoke_spot_dev/pages/login_page.dart';
+import 'package:smoke_spot_dev/pages/user.dart';
+import 'package:smoke_spot_dev/providers/user_provider.dart';
+
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -7,10 +12,14 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // 회원가입 폼의 상태를 관리하는 GlobalKey
+  final TextEditingController _nameController = TextEditingController(); // 이름 입력 컨트롤러
+  final TextEditingController _emailController = TextEditingController(); // 이메일 입력 컨트롤러 
   final TextEditingController _passwordController = TextEditingController(); // 비밀번호 입력 컨트롤러
   final TextEditingController _confirmPasswordController = TextEditingController(); // 비밀번호 확인 입력 컨트롤러
+  final TextEditingController _birthdateController = TextEditingController(); // 생년월일 입력 컨트롤러
   bool _isAgreed = false; // 개인정보 활용 동의 여부 변수
   bool _isAgreedError = false; // 개인정보 활용 동의 에러 상태를 나타내는 변수 
+
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +50,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   // 이름 입력칸
                   SizedBox(height: 25),
                   TextFormField(
+                    controller: _nameController,
                     decoration: InputDecoration(
                       labelText: '이름',
                       border: OutlineInputBorder(),
@@ -52,10 +62,10 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-
                   // 이메일 입력칸
                   SizedBox(height: 11),
                   TextFormField(
+                    controller: _emailController,
                     decoration: InputDecoration(
                       labelText: '이메일 주소',
                       border: OutlineInputBorder(),
@@ -107,6 +117,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   // 생년월일 입력칸
                   SizedBox(height: 11),
                   TextFormField(
+                    controller: _birthdateController,
                     decoration: InputDecoration(
                       labelText: '생년월일(YYYYMMDD)',
                       border: OutlineInputBorder(),
@@ -119,7 +130,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       else if (!RegExp(r'^\d{8}$').hasMatch(value)) {
                         return '생년월일은 YYYYMMDD 형식으로 8자리입니다.';
                       } // 생년월일을 8자리 숫자로 적지 않았을 때 에러 메시지 
-                
                       return null;
                     },
                   ),
@@ -146,11 +156,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         style: TextStyle(color: Colors.red),
                         ),
                         ),
-
                   // Sign up 버튼
                   SizedBox(height: 11),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         if (!_isAgreed) {
                           setState(() {
@@ -158,11 +167,63 @@ class _SignUpPageState extends State<SignUpPage> {
                             }); 
                           return;
                       }
-                      // 폼이 유효하면 회원가입 처리 
-                      Navigator.pop(context);
+                      final user = User(
+                        name: _nameController.text,
+                        email: _emailController.text,
+                        password: _passwordController.text,
+                        confirmPassword: _confirmPasswordController.text,
+                        birthdate: _birthdateController.text,
+                        isAgreed: _isAgreed,
+                      );
+                      
+                      // UserProvider를 사용하여 회원가입 데이터 저장
+                      final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+                      try {
+                        await userProvider.saveUser(user);
+
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("회원가입 성공"),
+                              content: Text("회원가입에 성공했습니다"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginPage()));
+
+                                  },
+                                  child: Text("확인"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                    } catch(e) {
+                      // 데이터 저장 실패
+                      showDialog(
+                        context: context, 
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("오류"),
+                            content: Text("failed to save data"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("confirm"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     }
-                  },
-                    child: Text('Sign Up'),
+                  }
+                },
+                child: Text('Sign Up'),
                   ),
                 ],
               ),

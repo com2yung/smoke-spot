@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smoke_spot_dev/pages/custom_bottom_navigation_bar.dart';
+import 'package:smoke_spot_dev/providers/user_provider.dart';
 import 'user_info_edit_page.dart';
 import 'login_page.dart';
+import 'user.dart';
 import 'pages.dart';
-import 'bookmark_page.dart';
-import 'bookmark.dart';
+
 
 // 마이페이지
 class MyHomePage extends StatefulWidget {
@@ -28,15 +31,42 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     _tabController.dispose();
     super.dispose();
   }
+  final _buildUserInfoLabel = (String label, String value) {
+    return Text(
+      '$label $value',
+      style: TextStyle(
+        fontSize: 12,
+        color: Colors.black87,
+      ),
+    );
+  };
+
+  void _navigateToLoginOrEditPage() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.currentUser != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => UserInfoEditPage()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final currentUser = userProvider.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: BackButton(
           onPressed: () {
-            Navigator.pop(context);// pop으로 바꾸면 까만 화면만 나와서 일단 push로 함
+            Navigator.pop(context);
           },
         ),
       ),
@@ -59,21 +89,29 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('사용자 이름', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          Text('이메일 주소', style: TextStyle(color: Colors.black)),
-                          Text('생년월일', style: TextStyle(color: Colors.black)),
-                          Text('집 주소', style: TextStyle(color: Colors.black)),
+                          if (currentUser != null) ...[
+                            _buildUserInfoLabel('이름: ', currentUser.name),
+                            _buildUserInfoLabel('이메일 주소: ', currentUser.email),
+                            _buildUserInfoLabel('생년월일: ', currentUser.birthdate),
+                          ] else ...[
+                            Text('로그인이 필요합니다.', style: TextStyle(fontSize: 16, color: Colors.black)),
+                            SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => LoginPage()),
+                                );
+                              },
+                              child: Text('로그인'),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                     IconButton(
                       icon: Icon(Icons.edit),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => UserInfoEditPage()),
-                          );
-                      },
+                      onPressed: _navigateToLoginOrEditPage,
                     ),
                   ],
                 ),
@@ -104,6 +142,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
                   onPressed: () {
+                    userProvider.logout();
                     Navigator.push(
                       context, 
                       MaterialPageRoute(builder: (context) => LoginPage()),
@@ -116,64 +155,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       ),
     ),
     // 바텀 네비게이션 바 섹션 
-  bottomNavigationBar: BottomNavigationBar(
-  backgroundColor: Colors.white,
-  items: const <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: Icon(Icons.camera_alt),
-      label: '부스 등록',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.star),
-      label: '저장',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: '홈',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.forum),
-      label: '커뮤니티',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.person),
-      label: '마이페이지',
-    ),
-  ],
-  selectedItemColor: Colors.black26,
-  unselectedItemColor: Colors.black,
-  currentIndex: 4,
-  type: BottomNavigationBarType.fixed,
-  onTap: (int index) {
-    switch (index) {
-      case 0:
-        // 부스 등록 페이지로 이동
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => BookmarkPage(bookmark: widget.bookmark)),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-        break;
-      case 3:
-        // 커뮤니티 페이지로 이동
-        break;
-      case 4:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MyHomePage(bookmark: widget.bookmark)),
-        );
-        break;
-    }
-  },
-),
-
+  bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 4,)
     );
   }
 }

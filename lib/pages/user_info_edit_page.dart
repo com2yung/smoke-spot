@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:smoke_spot_dev/providers/user_provider.dart';
+import 'user.dart';
+import 'dart:convert';
+import 'dart:io';
 
 
 class UserInfoEditPage extends StatefulWidget {
@@ -8,19 +14,15 @@ class UserInfoEditPage extends StatefulWidget {
 
 class _UserInfoEditPageState extends State<UserInfoEditPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     // 각 입력 칸의 값이 변경될 때마다 _onFieldChanged 함수를 호출하여 수정 여부를 감지
-    _nameController.addListener(_onFieldChanged);
     _passwordController.addListener(_onFieldChanged);
     _confirmPasswordController.addListener(_onFieldChanged);
-    _addressController.addListener(_onFieldChanged);
   }
 
   void _onFieldChanged() {
@@ -30,8 +32,22 @@ class _UserInfoEditPageState extends State<UserInfoEditPage> {
     });
   }
 
+  Future<void> saveUserToFile(User user) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/User.json');
+      final userJson = jsonEncode(user.toJson());
+      await file.writeAsString(userJson);
+    } catch(e) {
+      print('Error saving user to file: $e');
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final currentUser = userProvider.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('회원정보 수정'),
@@ -52,17 +68,18 @@ class _UserInfoEditPageState extends State<UserInfoEditPage> {
                     backgroundColor: Colors.black,
                     child: Icon(Icons.person, size: 40, color: Colors.white),
                   ),
-                  SizedBox(height: 25),
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: '이름',
-                      border: OutlineInputBorder(),
+                  SizedBox(height: 15),
+                  Center(
+                    child: Text(
+                      currentUser?.name ?? '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    
                   ),
-                  // 비밀번호 입력칸
-                  SizedBox(height: 11),
+                  SizedBox(height: 25),
                   TextFormField(
                     controller: _passwordController,
                     decoration: InputDecoration(
@@ -101,20 +118,23 @@ class _UserInfoEditPageState extends State<UserInfoEditPage> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 11),
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      labelText: '집 주소',
-                      border: OutlineInputBorder(),
-                    ),
-                    
-                  ),
+                  
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // 폼이 유효하면 수정 완료 처리
+                        if (currentUser != null) {
+                          final updatedUser = User(
+                            name: currentUser.name,
+                            email: currentUser.email,
+                            password: _passwordController.text,
+                            confirmPassword: _confirmPasswordController.text,
+                            birthdate: currentUser.birthdate,
+                            isAgreed: true,
+                          );
+                          userProvider.saveUser(updatedUser);
+                          saveUserToFile(updatedUser);
+                        }
                         Navigator.pop(context);
                       }
                     },
