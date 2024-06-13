@@ -1,0 +1,170 @@
+[
+  {
+    "address": "경기도 용인시 기흥구 서농동 21 경희대학교 국제캠퍼스 외국어대학관 정문",
+    "addressDetail": "1층 외부",
+    "image": "assets/images/smokeSpots/smokeSpot1",
+    "latitude": 37.241789,
+    "longitude": 127.079289,
+    "averageScore": 3.5,
+    "reviewCount": 2,
+    "details": {
+      "booth": true,
+      "ventilation": false,
+      "sealed": true,
+      "reviews": [
+        {
+          "userId": "user123",
+          "userNickname": "나람",
+          "score": 4,
+          "text": "좋은 장소이지만 환기가 좀 더 필요해요.",
+          "date": "2024-06-12"
+        },
+        {
+          "userId": "user456",
+          "userNickname": "초코칩",
+          "score": 3,
+          "text": "위치는 편리하지만 청결하지 않아요.",
+          "date": "2024-06-10"
+        }
+      ]
+    }
+  },
+  {
+    "address": "경기도 용인시 기흥구 서천동 43-5 경희대학교 멀티미디어관",
+    "addressDetail": "건물 뒤편",
+    "image": "assets/images/smokeSpots/smokeSpot2",
+    "latitude": 37.243013,
+    "longitude": 127.078452,
+    "averageScore": 5.0,
+    "reviewCount": 1,
+    "details": {
+      "booth": false,
+      "ventilation": true,
+      "sealed": false,
+      "reviews": [
+        {
+          "userId": "user789",
+          "userNickname": "응애",
+          "score": 5,
+          "text": "환기가 잘 되어 있는 멋진 장소에요.",
+          "date": "2024-06-11"
+        }
+      ]
+    }
+  },
+  {
+    "address": "경기도 용인시 기흥구 덕영대로 1732 경희대학교 제2기숙사",
+    "addressDetail": "2층 휴게실",
+    "image": "assets/images/smokeSpots/smokeSpot3",
+    "latitude": 37.244720,
+    "longitude": 127.079610,
+    "averageScore": 2.0,
+    "reviewCount": 1,
+    "details": {
+      "booth": true,
+      "ventilation": true,
+      "sealed": true,
+      "reviews": [
+        {
+          "userId": "user321",
+          "userNickname": "별빛",
+          "score": 2,
+          "text": "사람이 너무 많고 관리가 잘 안돼요.",
+          "date": "2024-06-09"
+        }
+      ]
+    }
+  },
+  {
+    "address": "경기도 용인시 기흥구 덕영대로 1732 경희대학교 중앙도서관",
+    "addressDetail": "정문 옆",
+    "image": "assets/images/smokeSpots/smokeSpot4",
+    "latitude": 37.244370,
+    "longitude": 127.079100,
+    "averageScore": 3.0,
+    "reviewCount": 1,
+    "details": {
+      "booth": true,
+      "ventilation": false,
+      "sealed": false,
+      "reviews": [
+        {
+          "userId": "user654",
+          "userNickname": "달빛",
+          "score": 3,
+          "text": "보통 장소입니다. 더 나은 관리가 필요해요.",
+          "date": "2024-06-08"
+        }
+      ]
+    }
+  },
+  {
+    "address": "경기도 용인시 기흥구 서천동 1 경희대학교 전자정보대학",
+    "addressDetail": "1층 현관 앞",
+    "image": "assets/images/smokeSpots/smokeSpot5",
+    "latitude": 37.242452,
+    "longitude": 127.078982,
+    "averageScore": 4.0,
+    "reviewCount": 1,
+    "details": {
+      "booth": true,
+      "ventilation": true,
+      "sealed": true,
+      "reviews": [
+        {
+          "userId": "user987",
+          "userNickname": "푸른하늘",
+          "score": 4,
+          "text": "깨끗하고 환기가 잘 돼요.",
+          "date": "2024-06-07"
+        }
+      ]
+    }
+  },
+  {
+    "address": "경기도 기흥구 용인시 경희대학교 예술디자인대학",
+    "addressDetail": "건물 측면",
+    "image": "assets/images/smokeSpots/smokeSpot6",
+    "latitude": 37.241689,
+    "longitude": 127.078859,
+    "averageScore": 5.0,
+    "reviewCount": 1,
+    "details": {
+      "booth": false,
+      "ventilation": true,
+      "sealed": false,
+      "reviews": [
+        {
+          "userId": "user123",
+          "userNickname": "한별",
+          "score": 5,
+          "text": "휴식하고 흡연하기에 좋은 장소에요.",
+          "date": "2024-06-06"
+        }
+      ]
+    }
+  },
+  {
+    "address": "경기도 용인시 서천동 26 경희대학교 공과대학",
+    "addressDetail": "후문 옆",
+    "image": "assets/images/smokeSpots/smokeSpot7",
+    "latitude": 37.243512,
+    "longitude": 127.077930,
+    "averageScore": 4.0,
+    "reviewCount": 1,
+    "details": {
+      "booth": false,
+      "ventilation": true,
+      "sealed": false,
+      "reviews": [
+        {
+          "userId": "user456",
+          "userNickname": "민트초코",
+          "score": 4,
+          "text": "편리하고 깨끗해요.",
+          "date": "2024-06-05"
+        }
+      ]
+    }
+  }
+]
