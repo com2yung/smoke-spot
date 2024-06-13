@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/location_provider.dart';
-import 'providers/user_provider.dart'; 
+import 'package:flutter/services.dart' show rootBundle;
+import 'providers/providers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'pages/pages.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await requestWritePermission();
 
-  runApp(const MyApp());
+  // Load JSON data
+  String jsonString = await rootBundle.loadString('assets/data/smokeSpots.json');
+
+  runApp(
+    MyApp(jsonString: jsonString),
+  );
 }
 
 Future<void> requestWritePermission() async {
@@ -19,7 +25,9 @@ Future<void> requestWritePermission() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String jsonString;
+
+  const MyApp({super.key, required this.jsonString});
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +39,18 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => UserProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => SmokeSpotProvider()..loadSmokeSpots(jsonString),
+        ),
       ],
       child: MaterialApp(
-      title: 'SmokingSpot',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      home: SplashPage(),
+        title: 'SmokingSpot',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          scaffoldBackgroundColor: Colors.white,
+        ),
+        home: SplashPage(),
       ),
     );
   }

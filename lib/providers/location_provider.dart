@@ -37,7 +37,7 @@ class LocationProvider with ChangeNotifier {
   }
 
   Future<void> requestPermission() async {
-    _permissionGranted = await _location.requestPermission();
+    _initLocationService();
     notifyListeners();
   }
 }

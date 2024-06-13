@@ -4,14 +4,13 @@ import 'package:flutter/gestures.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:smoke_spot_dev/pages/custom_bottom_navigation_bar.dart';
-import 'package:smoke_spot_dev/providers/user_provider.dart';
 import 'login_page.dart';
 import 'pages.dart';
 import 'place.dart';
 import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
-import 'package:smoke_spot_dev/providers/location_provider.dart';
+import 'package:smoke_spot_dev/providers/providers.dart';
 
 class HomePage extends StatefulWidget {
   final Bookmark? bookmark;
@@ -27,7 +26,9 @@ class _HomePageState extends State<HomePage> {
   double _sheetSize = 0.1; // 드래그 시트의 크기
   late Bookmark bookmarkManager;
   int _currentindex = 2; // 현재 인덱스를 홈으로 설정
-  
+
+  Set<Marker> _markers = {}; // 지도에 표시할 마커들
+
   @override
   void initState() {
     super.initState();
@@ -35,11 +36,26 @@ class _HomePageState extends State<HomePage> {
     loadNearbyPlaces();
     bookmarkManager = Bookmark();
   }
+
   // json 파일을 읽어오는 함수
   void loadNearbyPlaces() async {
     String jsonString = await rootBundle.loadString('assets/data/places.json'); // 파일 읽기
     setState(() {
       _nearbyPlaces = parsePlacesFromJson(jsonString);
+    });
+  }
+
+  void loadSmokeSpots(Set<SmokeSpot> smokeSpots) {
+    // 스모크 스팟을 마커로 변환하여 _markers에 추가합니다.
+    setState(() {
+      _markers.addAll(smokeSpots.map((spot) => Marker(
+        markerId: MarkerId(spot.address),
+        position: LatLng(spot.latitude, spot.longitude),
+        infoWindow: InfoWindow(
+          title: spot.address,
+          snippet: '평균 점수: ${spot.averageScore} 리뷰 개수: ${spot.reviewCount}',
+        ),
+      )));
     });
   }
 
@@ -49,11 +65,46 @@ class _HomePageState extends State<HomePage> {
     mapController = controller;
   }
 
+  void animateCameraTo(LatLng position) {
+    if (mapController != null) {
+      mapController!.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(
+          bearing: 0,
+          target: position,
+          zoom: 16,
+        ),
+      ));
+    }
+  }
+
+  void _openSearchPage() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SearchPage()),
+    );
+    if (result != null && result.containsKey('latitude') && result.containsKey('longitude')) {
+      animateCameraTo(LatLng(result['latitude'], result['longitude']));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationProvider>(context);
     final currentLocation = locationProvider.currentLocation;
     final userProvider = Provider.of<UserProvider>(context);
+    final smokeSpots = Provider.of<SmokeSpotProvider>(context).smokeSpots;
+
+    // 스모크 스팟 마커를 로드합니다.
+    loadSmokeSpots(smokeSpots.toSet());
+
+    // 현재 위치 마커를 추가합니다.
+    if (currentLocation != null) {
+      _markers.add(Marker(
+        markerId: const MarkerId("MyLocation"),
+        position: currentLocation,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      ));
+    }
 
     return Scaffold(
       // AppBar 세션 - 메뉴 아이콘, 검색창, 검색 아이콘
@@ -63,7 +114,9 @@ class _HomePageState extends State<HomePage> {
           builder: (BuildContext context) {
             return IconButton(
               icon: Icon(Icons.menu),
-              onPressed: () { Scaffold.of(context).openDrawer();},
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
             );
           },
         ),
@@ -73,12 +126,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: TextField(
                 readOnly: true,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SearchPage()),
-                  );
-                },
+                onTap: _openSearchPage,
                 decoration: InputDecoration(
                   hintText: '원하는 장소를 입력하세요.',
                   border: InputBorder.none,
@@ -89,12 +137,7 @@ class _HomePageState extends State<HomePage> {
             // 검색 아이콘
             IconButton(
               icon: Icon(Icons.search),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SearchPage()),
-                );
-              },
+              onPressed: _openSearchPage,
             ),
           ],
         ),
@@ -113,33 +156,20 @@ class _HomePageState extends State<HomePage> {
                 target: currentLocation,
                 zoom: 16.0,
               ),
-              markers: {
-                Marker(
-                  markerId: const MarkerId("My"),
-                  position: currentLocation,
-                ),
-              },
+              markers: _markers,
               onMapCreated: _onMapCreated,
               zoomGesturesEnabled: true,
               gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                 Factory<OneSequenceGestureRecognizer>(
-                  () => EagerGestureRecognizer(),
+                      () => EagerGestureRecognizer(),
                 ),
               },
             ),
-          /*mapController!.animateCamera(CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                          bearing: 0,
-                          target: _currentP!,
-                          zoom: 16,
-                        ),
-                      ));
-           */
-          Positioned( ///inkwell 효과 없음 수정필요
+          Positioned(
             right: 20,
             bottom: 150,
             child: FloatingActionButton(
-              onPressed: (){
+              onPressed: () {
                 if (mapController != null && currentLocation != null) {
                   mapController!.animateCamera(CameraUpdate.newCameraPosition(
                     CameraPosition(
@@ -150,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                   ));
                 } else {
                   // Handle the case where mapController or _currentP is null
-                  if(locationProvider.permissionStatus == PermissionStatus.denied){
+                  if (locationProvider.permissionStatus == PermissionStatus.denied) {
                     locationProvider.requestPermission();
                   }
                 }
@@ -160,120 +190,109 @@ class _HomePageState extends State<HomePage> {
               child: const Icon(Icons.my_location),
             ),
           ),
-              // DraggableScrollableSheet 세션 - 아래에서 위로 드래그 하면 나오는 거
-              DraggableScrollableSheet(
-                initialChildSize: _sheetSize,
-                minChildSize: _sheetSize,
-                maxChildSize: 0.6,
-                builder: (BuildContext context, ScrollController? scrollController) {
-                if (scrollController != null) {
-                  _scrollController = scrollController;
-                }
-                return Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16.0),
-                          topRight: Radius.circular(16.0),
-                        ),
-                        boxShadow: [
-                         BoxShadow(
+          // DraggableScrollableSheet 세션 - 아래에서 위로 드래그 하면 나오는 거
+          DraggableScrollableSheet(
+            initialChildSize: _sheetSize,
+            minChildSize: _sheetSize,
+            maxChildSize: 0.6,
+            builder: (BuildContext context, ScrollController? scrollController) {
+              if (scrollController != null) {
+                _scrollController = scrollController;
+              }
+              return Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16.0),
+                        topRight: Radius.circular(16.0),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10.0,
                           spreadRadius: 2.0,
                         ),
-                       ],
-                      ),
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        itemCount: _nearbyPlaces.length + 2,
-                        itemBuilder: (BuildContext context, int index) {
-                          if (index == 0) {
-                            return SizedBox(height: 100);
-                          } else if (index == 1) {
-                            return SizedBox(
-                              height: 40,
-                              child: Center(
-                                child:Text(
-                                  '추천 흡연구역',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ),
-                              /*Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      ],
+                    ),
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: _nearbyPlaces.length + 2,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (index == 0) {
+                          return SizedBox(height: 100);
+                        } else if (index == 1) {
+                          return SizedBox(
+                            height: 40,
+                            child: Center(
                               child: Text(
                                 '추천 흡연구역',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
-                                  ),
                                 ),
-                              );*/
-                            );
-                          }
-                            final place = _nearbyPlaces.elementAt(index - 2);
-                            return ListTile(
-                              title: Text(place.name),
-                              subtitle: Text(place.address),
-                              leading: place.image != null
-                              ? Image.asset(
-                                place.image!,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(Icons.image); // 이미지 파일 로드 실패시 이미지 아이콘
-                                },
-                              )
-                              :null,
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.star,
-                                color: bookmarkManager.isBookmarked(place) ? Colors.yellow : Colors.grey,
-                               ), // 북마크 여부에 따라 색상 변경 
-                              onPressed: () {
-                                setState( () {
-                                  bookmarkManager.toggleBookmark(place);
-                                }); // 저장 아이콘 동작
-                              },
+                              ),
                             ),
-                            onTap: () {
-                              // 장소를 탭했을 때
-                            },
                           );
-                        },
-                      ),
-                    ),
-                    // 화살표 아이콘을 드래그하면 DraggableScrollableSheet 펼쳐짐
-                    GestureDetector(
-                      onVerticalDragUpdate: (details) {
-                        _scrollController.animateTo(
-                          _scrollController.position.pixels -
-                              details.primaryDelta!,
-                          duration: Duration(milliseconds: 100),
-                          curve: Curves.easeInOut,
+                        }
+                        final place = _nearbyPlaces.elementAt(index - 2);
+                        return ListTile(
+                          title: Text(place.name),
+                          subtitle: Text(place.address),
+                          leading: place.image != null
+                              ? Image.asset(
+                            place.image!,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.image); // 이미지 파일 로드 실패시 이미지 아이콘
+                            },
+                          )
+                              : null,
+                          trailing: IconButton(
+                            icon: Icon(
+                              Icons.star,
+                              color: bookmarkManager.isBookmarked(place) ? Colors.yellow : Colors.grey,
+                            ), // 북마크 여부에 따라 색상 변경
+                            onPressed: () {
+                              setState(() {
+                                bookmarkManager.toggleBookmark(place);
+                              }); // 저장 아이콘 동작
+                            },
+                          ),
+                          onTap: () {
+                            // 장소를 탭했을 때
+                          },
                         );
                       },
-                      child: Container(
-                        alignment: Alignment.topCenter,
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.keyboard_arrow_up,
-                          color: Colors.grey,
-                        ),
+                    ),
+                  ),
+                  // 화살표 아이콘을 드래그하면 DraggableScrollableSheet 펼쳐짐
+                  GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      _scrollController.animateTo(
+                        _scrollController.position.pixels - details.primaryDelta!,
+                        duration: Duration(milliseconds: 100),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Container(
+                      alignment: Alignment.topCenter,
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_up,
+                        color: Colors.grey,
                       ),
                     ),
-                  ],
-                );
-              },
-            ), 
-      ],
-    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
       // NavigationBar 세션
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentindex,
@@ -288,7 +307,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               CircleAvatar(
                 backgroundColor: Colors.black,
-                child: Icon(Icons.account_circle, color: Colors.white,),
+                child: Icon(
+                  Icons.account_circle,
+                  color: Colors.white,
+                ),
               ),
               SizedBox(height: 10),
               Consumer<UserProvider>(
@@ -299,12 +321,17 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           user.name,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18,),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                         SizedBox(height: 20),
                         Text(
                           user.email,
-                          style: TextStyle(fontSize: 16,),
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     );
@@ -315,7 +342,8 @@ class _HomePageState extends State<HomePage> {
                         Text(
                           '로그인이 필요합니다.',
                           style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(height: 20),
@@ -327,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                           child: Text('로그인'),
-                          ),
+                        ),
                       ],
                     );
                   }
