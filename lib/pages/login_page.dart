@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'sign_up_page.dart';
 import 'package:provider/provider.dart';
-import 'package:smoke_spot_dev/providers/user_provider.dart'; // UserProvider import 추가
+import 'package:smoke_spot_dev/providers/user_provider.dart'; 
 import 'pages.dart';
-import 'user.dart';
+import 'sign_up_page.dart';
 
 // 로그인 페이지 
 class LoginPage extends StatelessWidget {

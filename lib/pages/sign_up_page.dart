@@ -4,6 +4,7 @@ import 'package:smoke_spot_dev/pages/login_page.dart';
 import 'package:smoke_spot_dev/pages/user.dart';
 import 'package:smoke_spot_dev/providers/user_provider.dart';
 
+// 회원가입 페이지
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -46,7 +47,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     backgroundColor: Colors.black,
                     child: Icon(Icons.person, size: 40, color: Colors.white),
                   ),
-
                   // 이름 입력칸
                   SizedBox(height: 25),
                   TextFormField(
@@ -71,12 +71,11 @@ class _SignUpPageState extends State<SignUpPage> {
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
-                  ), // 이메일 유효성 여부 판단하는 코드 있어야 함, 패키지 오류나서 보류
-
+                  ), 
                   // 비밀번호 입력칸
                   SizedBox(height: 11),
                   TextFormField(
-                    controller: _passwordController, // 비밀번호 입력 컨트롤러 연결
+                    controller: _passwordController, 
                     decoration: InputDecoration(
                       labelText: '비밀번호(영문, 숫자, 특수문자를 포함한 8자리 이상)',
                       border: OutlineInputBorder(),
@@ -85,20 +84,20 @@ class _SignUpPageState extends State<SignUpPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '비밀번호를 입력해주세요.';
-                      } // 비밀번호를 입력하지 않을 때 에러 메시지
+                      } 
                       else if (value.length < 8) {
                         return '비밀번호는 8자리 이상이어야 합니다.';
-                      } // 비밀번호가 8자리 미만일 때 에러 메시지
+                      } 
                       else if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$&*~])').hasMatch(value)) {
                         return '비밀번호는 영문과 숫자, 특수문자 조합이어야 합니다.';
-                      } // 비밀번호가 영문과 숫자 조합이 아닐 시 에러 메시지 
+                      } 
                       return null;
                     },
                   ),
                   // 비밀번호 확인 입력칸
                   SizedBox(height: 11),
                   TextFormField(
-                    controller: _confirmPasswordController, // 비밀번호 확인 컨트롤러 연결
+                    controller: _confirmPasswordController, 
                     decoration: InputDecoration(
                       labelText: '비밀번호 확인',
                       border: OutlineInputBorder(),
@@ -107,11 +106,11 @@ class _SignUpPageState extends State<SignUpPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '비밀번호 확인을 입력해주세요.'; 
-                      } // 비밀번호 확인을 입력하지 않을 시 에러 메시지
+                      } 
                       else if (value != _passwordController.text) {
                         return '비밀번호가 일치하지 않습니다.'; 
-                      } // 비밀번호가 일치하지 않으면 에러 메시지
-                      return null; // 입력이 올바르면 null 반환
+                      } 
+                      return null; 
                     },
                   ),
                   // 생년월일 입력칸
@@ -126,10 +125,10 @@ class _SignUpPageState extends State<SignUpPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '생년월일 8자리를 입력해주세요.';
-                      } // 생년월일을 입력하지 않으면 에러 메시지 
+                      }  
                       else if (!RegExp(r'^\d{8}$').hasMatch(value)) {
                         return '생년월일은 YYYYMMDD 형식으로 8자리입니다.';
-                      } // 생년월일을 8자리 숫자로 적지 않았을 때 에러 메시지 
+                      }  
                       return null;
                     },
                   ),
@@ -143,12 +142,12 @@ class _SignUpPageState extends State<SignUpPage> {
                           setState(() {
                             _isAgreed = value ?? false;
                           });
-                        }, // 개인정보 활용 동의 체크 이벤트 처리
+                        },
                       ),
                       Text('개인정보 활용에 동의합니다.'),
                     ],
                   ),
-                  if (!_isAgreed && _isAgreedError) // 개인정보 활용에 동의하지 않은 경우 에러 메시지
+                  if (!_isAgreed && _isAgreedError) 
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Text(
@@ -163,7 +162,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       if (_formKey.currentState!.validate()) {
                         if (!_isAgreed) {
                           setState(() {
-                            _isAgreedError = true; // 개인정보 활용 동의 여부 확인
+                            _isAgreedError = true; 
                             }); 
                           return;
                       }
@@ -174,12 +173,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         confirmPassword: _confirmPasswordController.text,
                         birthdate: _birthdateController.text,
                         isAgreed: _isAgreed,
-                      );
-                      
-                      // UserProvider를 사용하여 회원가입 데이터 저장
-                      final userProvider = Provider.of<UserProvider>(context, listen: false);
+                      );       
 
                       try {
+                        final userProvider = Provider.of<UserProvider>(context, listen: false);
                         await userProvider.saveUser(user);
 
                         showDialog(

@@ -4,7 +4,6 @@ import 'package:smoke_spot_dev/pages/custom_bottom_navigation_bar.dart';
 import 'package:smoke_spot_dev/providers/user_provider.dart';
 import 'user_info_edit_page.dart';
 import 'login_page.dart';
-import 'user.dart';
 import 'pages.dart';
 
 

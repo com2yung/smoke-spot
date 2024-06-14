@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -6,9 +7,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'pages/pages.dart';
 
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await requestWritePermission();
+
+  /*UserProvider userProvider = UserProvider();
+  await userProvider.copyUserDataToAssets();*/
 
   // Load JSON data
   String jsonString = await rootBundle.loadString('assets/data/smokeSpots.json');

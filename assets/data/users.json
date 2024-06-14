@@ -1,0 +1,48 @@
+[
+    {
+        "name": "",
+        "email": "",
+        "password": "",
+        "confirmPassword": "",
+        "birthdate": "",
+        "isAgreed": false
+      },
+
+      {
+        "name": "나람",
+        "email": "naram01@gmail.com",
+        "password": "naram01!",
+        "confirmPassword": "naram01!",
+        "birthdate": "20020814",
+        "isAgreed": true
+      },
+
+      {
+        "name": "초코칩",
+        "email": "choco99@gmail.com",
+        "password": "choco99!",
+        "confirmPassword": "choco99!",
+        "birthdate": "19990912",
+        "isAgreed": true
+      },
+
+      {
+        "name": "응애",
+        "email": "baby111@gmail.com",
+        "password": "naram01!",
+        "confirmPassword": "naram01!",
+        "birthdate": "20050101",
+        "isAgreed": true
+      },
+
+      {
+        "name": "별빛",
+        "email": "starlight@gmail.com",
+        "password": "star001!",
+        "confirmPassword": "star001!",
+        "birthdate": "20001125",
+        "isAgreed": true
+      }
+ 
+      
+]
