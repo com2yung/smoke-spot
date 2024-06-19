@@ -1,20 +1,29 @@
 [
   {
-    "name": "Place 1",
+    "name": "경기도 용인시 기흥구 서천동 1 경희대학교 전자정보대학",
     "location": {
       "latitude": 37.1234,
       "longitude": 127.5678
     },
-    "address": "37.1234° N, 127.5678° E",
+    "address": "1층 현관 앞",
     "image": "assets/images/place_1.jpg"
   },
   {
-    "name": "Place 2",
+    "name": "경기도 기흥구 용인시 경희대학교 예술디자인대학",
     "location": {
       "latitude": 37.2345,
       "longitude": 127.6789
     },
-    "address": "37.2345° N, 127.6789° E",
+    "address": "건물 측면",
+    "image": "assets/images/place_2.jpg"
+  },
+  {
+    "name": "경기도 용인시 기흥구 덕영대로 1732 경희대학교 중앙도서관",
+    "location": {
+      "latitude": 37.2345,
+      "longitude": 127.6789
+    },
+    "address": "정문 옆",
     "image": "assets/images/place_2.jpg"
   }
 ]

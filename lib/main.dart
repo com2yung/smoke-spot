@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:smoke_spot_dev/providers/bookmark_provider.dart';
 import 'providers/providers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'pages/pages.dart';
@@ -12,8 +13,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await requestWritePermission();
 
-  /*UserProvider userProvider = UserProvider();
-  await userProvider.copyUserDataToAssets();*/
 
   // Load JSON data
   String jsonString = await rootBundle.loadString('assets/data/smokeSpots.json');
@@ -46,6 +45,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => SmokeSpotProvider()..loadSmokeSpots(jsonString),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => BookmarkProvider()
         ),
       ],
       child: MaterialApp(

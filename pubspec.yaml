@@ -63,6 +63,8 @@ flutter:
   assets: 
     - assets/data/places.json
     - assets/data/users.json
+    - assets/images/place_1.jpg
+    - assets/images/place_2.jpg
     - assets/images/blue_circle_with_white_border.png
     - assets/data/smokeSpots.json
 

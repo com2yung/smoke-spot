@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart'; // LatLng import
+import 'package:smoke_spot_dev/ComunityScreen.dart';
 import 'package:smoke_spot_dev/providers/location_provider.dart'; // LocationProvider import
 import 'pages.dart'; // 페이지 import
 
@@ -84,7 +85,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             }
             break;
           case 3: // 커뮤니티 페이지로 이동
-            /*_navigateToPage(CommunityPage(), currentIndex == 2);*/
+            _navigateToPage(CommunityScreen(), currentIndex == 2);
             break;
           case 4: // 마이 페이지로 이동
             _navigateToPage(MyHomePage(), currentIndex == 2);

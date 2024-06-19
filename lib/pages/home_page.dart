@@ -13,20 +13,18 @@ import 'package:provider/provider.dart';
 import 'package:smoke_spot_dev/providers/providers.dart';
 
 class HomePage extends StatefulWidget {
-  final Bookmark? bookmark;
-  const HomePage({Key? key, this.bookmark}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Set<Place> _nearbyPlaces = {}; // 드래그 시트 - 주변 장소 데이터
-  late ScrollController _scrollController; // 드래그 시트 컨트롤러
-  double _sheetSize = 0.1; // 드래그 시트의 크기
-  late Bookmark bookmarkManager;
-  int _currentindex = 2; // 현재 인덱스를 홈으로 설정
-
+  Set<Place> _nearbyPlaces = {}; // 드래그 시트 - 주변 흡연구역 set
+  late ScrollController _scrollController; 
+  double _sheetSize = 0.1; 
+  int _currentindex = 2; 
+  late BookmarkProvider _bookmarkProvider;
   Set<Marker> _markers = {}; // 지도에 표시할 마커들
 
   @override
@@ -34,7 +32,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _scrollController = ScrollController();
     loadNearbyPlaces();
-    bookmarkManager = Bookmark();
+    _bookmarkProvider = Provider.of<BookmarkProvider>(context, listen: false);
   }
 
   // json 파일을 읽어오는 함수
@@ -221,7 +219,7 @@ class _HomePageState extends State<HomePage> {
                       itemCount: _nearbyPlaces.length + 2,
                       itemBuilder: (BuildContext context, int index) {
                         if (index == 0) {
-                          return SizedBox(height: 100);
+                          return SizedBox(height: 25);
                         } else if (index == 1) {
                           return SizedBox(
                             height: 40,
@@ -237,34 +235,61 @@ class _HomePageState extends State<HomePage> {
                           );
                         }
                         final place = _nearbyPlaces.elementAt(index - 2);
-                        return ListTile(
-                          title: Text(place.name),
-                          subtitle: Text(place.address),
-                          leading: place.image != null
-                              ? Image.asset(
-                            place.image!,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.image); // 이미지 파일 로드 실패시 이미지 아이콘
-                            },
-                          )
-                              : null,
-                          trailing: IconButton(
-                            icon: Icon(
-                              Icons.star,
-                              color: bookmarkManager.isBookmarked(place) ? Colors.yellow : Colors.grey,
-                            ), // 북마크 여부에 따라 색상 변경
-                            onPressed: () {
-                              setState(() {
-                                bookmarkManager.toggleBookmark(place);
-                              }); // 저장 아이콘 동작
-                            },
-                          ),
-                          onTap: () {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          child: Card(
+                            elevation: 3,
+                            color: Colors.white,
+                            child: ListTile(
+                              title: Text(place.name),
+                              subtitle: Text(place.address),
+                              leading: place.image != null
+                                  ? Image.asset(
+                                      place.image!,
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Icon(Icons.image); // 이미지 파일 로드 실패시 이미지 아이콘
+                                        },
+                                      )
+                                    : null,
+                                    trailing: Consumer<UserProvider>(
+                                      builder: (context, provider, child) {
+                                        if (userProvider.currentUser != null) {
+                                          return Consumer<BookmarkProvider>(
+                                            builder: (context, provider, child) {
+                                              bool isBookmarked = provider.isBookmarked(place);
+                                              return IconButton(
+                                                icon: Icon(Icons.star, color: isBookmarked ? Colors.yellow : Colors.grey,),
+                                                onPressed: () {
+                                                  setState( () {
+                                                    provider.toggleBookmark(place);
+                                                  });
+                                                },
+                                              );
+                                            },
+                                          );
+                                           } else {
+                                              return IconButton(
+                                                icon: Icon(Icons.star_border),
+                                                onPressed: () {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text('로그인이 필요합니다.'),
+                                                      duration: Duration(seconds: 3),
+                                                     ),
+                                                  );
+                                               },
+                                              );
+                          }
+                        },
+                      ),
+                      onTap: () {
                             // 장소를 탭했을 때
                           },
+                            ),
+                          ),
                         );
                       },
                     ),

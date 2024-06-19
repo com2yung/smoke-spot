@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smoke_spot_dev/pages/custom_bottom_navigation_bar.dart';
 import 'package:smoke_spot_dev/providers/user_provider.dart';
+import 'package:smoke_spot_dev/providers/bookmark_provider.dart';
 import 'user_info_edit_page.dart';
 import 'login_page.dart';
+import 'place.dart';
 import 'pages.dart';
 
 
 // 마이페이지
 class MyHomePage extends StatefulWidget {
-  final Bookmark? bookmark;
-  const MyHomePage({Key? key, this.bookmark}) : super(key: key);
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -18,18 +19,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
   final _buildUserInfoLabel = (String label, String value) {
     return Text(
       '$label $value',
@@ -39,6 +28,25 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       ),
     );
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _fetchReviews();
+  }
+   // Fetch reviews for the current user
+  Future<void> _fetchReviews() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.fetchReviewsForCurrentUser();
+    setState(() {}); // Update the UI after fetching reviews
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   void _navigateToLoginOrEditPage() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -131,8 +139,138 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    Center(child: Text('리뷰 관리 내용')),
-                    Center(child: Text('내 흡연구역 관리 내용')),
+                    Consumer<UserProvider>(
+                      builder: (context, userProvider, child) {
+                        final currentUser = userProvider.currentUser;
+                        final reviews = currentUser?.reviews;
+
+                        if (currentUser == null) {
+                          return Center(
+                            child:Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('아직 작성된 리뷰가 없습니다.'),
+                                SizedBox(height: 8),
+                              ],
+                            ),
+                          );
+                        } else if (reviews == null || reviews.isEmpty) {
+                          return Center(
+                            child: Text('아직 작성된 리뷰가 없습니다.'),
+                          );
+                        } else {
+                          return ListView.separated(
+                            itemCount: reviews.length,
+                            separatorBuilder: (BuildContext context, int index) => Divider(),
+                            itemBuilder: (BuildContext context, int index) {
+                              final review = reviews[index];
+                              return ListTile(
+                                title: Text('평점: ${review.score.toString()}'),
+                                subtitle: Text(review.text),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(review.date),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context, 
+                                          builder: (BuildContext context) {
+                                            String editedText = review.text;
+                                            return AlertDialog(
+                                              title: Text('리뷰 수정'),
+                                              content: TextFormField(
+                                                initialValue: review.text,
+                                                onChanged: (value) {
+                                                  editedText = value;
+                                                },
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  }, 
+                                                  child: Text('취소'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Provider.of<UserProvider>(context, listen: false).editReview(review, editedText);
+                                                      Navigator.pop(context);
+                                                    }, child: Text('저장'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.delete),
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context, 
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text('리뷰 삭제'),
+                                                content: Text('리뷰를 삭제하시겠습니까?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    }, 
+                                                    child: Text('취소'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Provider.of<UserProvider>(context, listen: false).deleteReview(review);
+                                                        Navigator.pop(context);
+                                                      }, 
+                                                      child: Text('삭제'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ],
+
+
+                                ),
+                              );
+                            },
+                          );
+                        }
+                      },
+                    ),
+                    Consumer<BookmarkProvider>(
+                      builder: (context, bookmarkProvider, child) {
+                        return bookmarkProvider.bookmarks.isEmpty
+                        ? Center(
+                          child: Text('아직 저장된 흡연구역이 없습니다.'),
+                        )
+                        : ListView.separated(
+                          itemCount: bookmarkProvider.bookmarks.length,
+                          separatorBuilder: (BuildContext context, int index) => Divider(),
+                          itemBuilder: (BuildContext context, int index) {
+                            Place place = bookmarkProvider.bookmarks.elementAt(index);
+                            return ListTile(
+                              title: Text(place.name),
+                              subtitle: Text(place.address),
+                              trailing: IconButton(
+                                icon: Icon(Icons.star), color: Colors.yellow,
+                                onPressed: () {
+                                  setState(() {
+                                    bookmarkProvider.removeBookmark(place);
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
